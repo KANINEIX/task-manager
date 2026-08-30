@@ -1,39 +1,207 @@
 <main align="center">
     <h1>Task Managment</h1>
+    <table align="center" class="table table-striped">
+        <thead class="table table-striped">
+            <tr>
+                @for (header of taskHeader; track header) {
+                    <th scope="col">{{header}}</th>
+                }
+            </tr>
+                @if (loading) {
+                    <p>Loading tasks...</p>
+                }
 
-    @if (loading) {
-        <p>Loading tasks...</p>
-    }
+                @if (errorMsg) {
+                    <p class="error">{{errorMsg}}</p>
+                }
 
-    @if (errorMsg) {
-        <p class="error">{{errorMsg}}</p>
-    }
+                @if (!loading && tasks.length === 0) {
+                    <p>No tasks found.</p>
+                }
 
-    @if (!loading && tasks.length === 0) {
-        <p>No tasks found.</p>
-    }
-
-    @for (task of tasks; track task.id) {
-        <div class="task">
-            <article>
-                <h2>{{task.title}}</h2>
-                <p>{{task.description}}</p>
-                <p>Status: {{task.status}}</p>
-                <p>Priority: {{task.priority}}</p>
-                <p>Created Date: {{task.created_datetime}}</p>
-                <p>Updated Date: {{task.updated_datetime}}</p>
-                <button type="button" (click)="editTask(task.id)">
-                    Edit
-                </button>
-                <button type="button" (click)="deleteTask(task.id)">
-                    Delete
-                </button>
-            </article>
-        </div>
-    }
+                @for (task of tasks; track task.id) {
+                    <tr>
+                        <td>{{task.id}}</td>
+                        <td>{{task.title}}</td>
+                        <td>{{task.description}}</td>
+                        <td>{{task.status}}</td>
+                        <td>{{task.priority}}</td>
+                        <td>{{task.created_datetime}}</td>
+                        <td>{{task.updated_datetime}}</td>
+                        <td>
+                            <button type="button" class="btn btn-outline-primary" (click)="openEditModal(task)">
+                                Edit
+                            </button>
+                            <button type="button" class="btn btn-outline-danger" (click)="openDeleteModal(task)">
+                                Delete
+                            </button>
+                        </td>
+                    </tr>
+                }
+        </thead>
+    </table>
 
     <div class="actions">
-        <button (click)="createTask()">Create New Task</button>
+        <button type="button" class="btn btn-primary" (click)="openCreateModal()">Create New Task</button>
     </div>
+
+    @if (taskModalOpen) {
+        <div
+            class="modal fade show d-block"
+            tabindex="-1"
+            role="dialog"
+            aria-modal="true">
+
+            <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+
+                <form [formGroup]="taskForm" (ngSubmit)="saveTask()">
+                <div class="modal-header">
+                    <h2 class="modal-title fs-5">
+                    {{ editingTask ? 'Edit Task' : 'Create Task' }}
+                    </h2>
+
+                    <button
+                    type="button"
+                    class="btn-close"
+                    aria-label="Close"
+                    (click)="closeTaskModal()">
+                    </button>
+                </div>
+
+                <div class="modal-body">
+                    <div class="mb-3 text-start">
+                    <label for="title" class="form-label">Title</label>
+
+                    <input
+                        id="title"
+                        type="text"
+                        class="form-control"
+                        formControlName="title">
+
+                    @if (
+                        taskForm.controls.title.touched &&
+                        taskForm.controls.title.invalid
+                    ) {
+                        <div class="text-danger mt-1">
+                        Title is required.
+                        </div>
+                    }
+                    </div>
+
+                    <div class="mb-3 text-start">
+                    <label for="description" class="form-label">
+                        Description
+                    </label>
+
+                    <textarea
+                        id="description"
+                        class="form-control"
+                        formControlName="description">
+                    </textarea>
+                    </div>
+
+                    <div class="mb-3 text-start">
+                    <label for="status" class="form-label">Status</label>
+
+                    <select
+                        id="status"
+                        class="form-select"
+                        formControlName="status">
+                        <option value="TODO">TODO</option>
+                        <option value="IN_PROGRESS">IN PROGRESS</option>
+                        <option value="DONE">DONE</option>
+                    </select>
+                    </div>
+
+                    <div class="mb-3 text-start">
+                    <label for="priority" class="form-label">Priority</label>
+
+                    <select
+                        id="priority"
+                        class="form-select"
+                        formControlName="priority">
+                        <option value="LOW">LOW</option>
+                        <option value="MEDIUM">MEDIUM</option>
+                        <option value="HIGH">HIGH</option>
+                        <option value="CRITICAL">CRITICAL</option>
+                    </select>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button
+                    type="button"
+                    class="btn btn-secondary"
+                    [disabled]="saving"
+                    (click)="closeTaskModal()">
+                    Cancel
+                    </button>
+
+                    <button
+                    type="submit"
+                    class="btn btn-primary"
+                    [disabled]="saving">
+                    {{ saving ? 'Saving...' : 'Save' }}
+                    </button>
+                </div>
+                </form>
+
+            </div>
+            </div>
+        </div>
+
+        <div class="modal-backdrop fade show"></div>
+    }
+
+    @if (deleteModalOpen && taskToDelete) {
+        <div
+            class="modal fade show d-block"
+            tabindex="-1"
+            role="dialog"
+            aria-modal="true">
+
+            <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+
+                <div class="modal-header">
+                <h2 class="modal-title fs-5">Delete Task</h2>
+
+                <button
+                    type="button"
+                    class="btn-close"
+                    (click)="closeDeleteModal()">
+                </button>
+                </div>
+
+                <div class="modal-body">
+                Delete “{{ taskToDelete.title }}”?
+                This action cannot be undone.
+                </div>
+
+                <div class="modal-footer">
+                <button
+                    type="button"
+                    class="btn btn-secondary"
+                    [disabled]="deleting"
+                    (click)="closeDeleteModal()">
+                    Cancel
+                </button>
+
+                <button
+                    type="button"
+                    class="btn btn-danger"
+                    [disabled]="deleting"
+                    (click)="confirmDelete()">
+                    {{ deleting ? 'Deleting...' : 'Delete' }}
+                </button>
+                </div>
+
+            </div>
+            </div>
+        </div>
+
+        <div class="modal-backdrop fade show"></div>
+    }
 
 </main>
