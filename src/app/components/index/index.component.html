@@ -1,3 +1,39 @@
-<div align=center>
-    
-</div>
+<main align="center">
+    <h1>Task Managment</h1>
+
+    @if (loading) {
+        <p>Loading tasks...</p>
+    }
+
+    @if (errorMsg) {
+        <p class="error">{{errorMsg}}</p>
+    }
+
+    @if (!loading && tasks.length === 0) {
+        <p>No tasks found.</p>
+    }
+
+    @for (task of tasks; track task.id) {
+        <div class="task">
+            <article>
+                <h2>{{task.title}}</h2>
+                <p>{{task.description}}</p>
+                <p>Status: {{task.status}}</p>
+                <p>Priority: {{task.priority}}</p>
+                <p>Created Date: {{task.created_dateTime}}</p>
+                <p>Updated Date: {{task.updated_dateTime}}</p>
+                <button type="button" (click)="editTask(task.id)">
+                    Edit
+                </button>
+                <button type="button" (click)="deleteTask(task.id)">
+                    Delete
+                </button>
+            </article>
+        </div>
+    }
+
+    <div class="actions">
+        <button (click)="createTask()">Create New Task</button>
+    </div>
+
+</main>

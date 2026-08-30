@@ -11,11 +11,7 @@ export class TaskService {
     private readonly apiUrl = 'http://localhost:9090/api/v1/task';
 
     constructor(private readonly http: HttpClient) {}
-
-    getAllTasks(): Observable<Task[]> {
-        return this.http.get<Task[]>(`${this.apiUrl}/get`);
-    }
-
+    
     getTaskById(id: number): Observable<Task> {
         return this.http.get<Task>(`${this.apiUrl}/get/${id}`);
     }

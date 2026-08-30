@@ -7,8 +7,8 @@ export interface Task {
     description: string;
     status: TaskStatus;
     priority: TaskPriority;
-    created_dateTime: Date;
-    updated_dateTime: Date;
+    created_dateTime: string;
+    updated_dateTime: string;
 }
 
 export interface TaskRequest {
